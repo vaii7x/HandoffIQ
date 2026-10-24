@@ -84,7 +84,30 @@ cp .env.example .env
 
 ---
 
-## 5. Startup Commands
+## 5. Database Migrations & Persistence Modes
+
+HandoffIQ supports two persistence modes controlled by the `MOCK_MODE` environment variable:
+
+1. **Local Development (`MOCK_MODE=true`)**: Runs entirely in-memory with zero external dependencies. No Supabase credentials or database needed.
+2. **Persistent Storage (`MOCK_MODE=false`)**: Stores all tasks, canonical requirements, handoffs, and workflow events in PostgreSQL on Supabase.
+   - If `MOCK_MODE=false` and `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` are missing or placeholder values, the application **fails immediately with `ConfigurationError`** to prevent silent data loss.
+
+### Running SQL Migrations
+Apply the initial PostgreSQL schema and Row Level Security (RLS) policies:
+```bash
+# Apply via Supabase CLI
+supabase db push
+
+# Or execute SQL migration script directly in Supabase SQL Editor
+# File: backend/migrations/001_initial_schema.sql
+```
+
+For full database architecture and RLS policy documentation, see:
+- [backend/docs/DATABASE_AND_RLS.md](docs/DATABASE_AND_RLS.md)
+
+---
+
+## 6. Startup Commands
 
 Start the FastAPI application with Uvicorn:
 
@@ -99,7 +122,7 @@ By default, the server will be accessible at:
 
 ---
 
-## 6. Testing
+## 7. Testing
 
 Run the automated test suite using `pytest`:
 
@@ -116,7 +139,7 @@ pytest backend/tests -v
 
 ---
 
-## 7. Endpoints & API Documentation
+## 8. Endpoints & API Documentation
 
 | Endpoint | Method | Status | Description |
 | :--- | :--- | :--- | :--- |
@@ -129,6 +152,11 @@ pytest backend/tests -v
 | `/api/tasks/{task_id}/events` | `GET` | `200` / `404` | Get workflow audit log events for a task |
 | `/api/tasks/{task_id}/handoffs` | `POST` | `201` / `404` | Submit handoff for validation, auto-repair, and audit |
 | `/api/tasks/{task_id}/handoffs` | `GET` | `200` / `404` | List all handoffs recorded for a task |
+| `/api/tasks/{task_id}/run` | `POST` | `200` / `404` / `409` | Start multi-agent workflow run in managed background job |
+| `/api/context-map/index` | `POST` | `200` / `400` / `404` | Safely index local workspace (HTML, CSS, JS, TS, React) |
+| `/api/context-map/index` | `GET` | `200` / `404` | Retrieve cached workspace index summary |
+| `/api/context-map/file` | `GET` | `200` / `400` / `403` / `422` | Safely inspect source file with traversal & secret protections |
+| `/api/tasks/{task_id}/context-map` | `POST` | `200` / `404` | Retrieve ranked context package & token metrics for task |
 | `/openapi.json` | `GET` | `200` | Raw OpenAPI 3.1 specification schema |
 | `/docs` | `GET` | `200` | Interactive Swagger UI documentation |
 | `/redoc` | `GET` | `200` | ReDoc alternative API documentation |
@@ -225,16 +253,76 @@ pytest backend/tests -v
 }
 ```
 
+### Example Workflow Execution Request
+`POST /api/tasks/{task_id}/run`
+
+### Example Workflow Execution Response (HTTP 200)
+```json
+{
+  "task_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "running",
+  "current_stage": "research",
+  "message": "Workflow started"
+}
+```
+
 ---
 
-## 8. AI Semantic Validation Provider
+## 9. Mutation Lab & Evaluation API
 
-For AI-powered semantic drift and constraint weakening analysis, refer to the interface specification in:
-- [backend/docs/SEMANTIC_PROVIDER_SPEC.md](docs/SEMANTIC_PROVIDER_SPEC.md)
+The Mutation Lab benchmarks a baseline (unvalidated) multi-agent workflow against a HandoffIQ-validated pipeline under controlled synthetic mutations.
+
+### Supported Mutation Types
+1. `missing_requirement`: Canonical requirement omitted from downstream handoff.
+2. `weakened_constraint`: Security or functional constraints relaxed (e.g. auth made optional).
+3. `semantic_drift`: Intent or scope drifted subtly without direct contradiction.
+4. `contradiction`: Explicit opposition to canonical requirements (e.g. `auth_enabled: false`).
+5. `invented_requirement`: Non-canonical, unrecognized requirement IDs injected.
+6. `suspicious_instruction`: Prompt injection or unsafe directives to bypass safety and dump credentials.
+
+### Experiment Creation Request
+`POST /api/experiments`
+```json
+{
+  "task_id": "550e8400-e29b-41d4-a716-446655440000",
+  "mutation_types": [
+    "missing_requirement",
+    "weakened_constraint"
+  ],
+  "runs": 1
+}
+```
+
+### Experiment Creation Response (HTTP 201)
+```json
+{
+  "experiment_id": "880e8400-e29b-41d4-a716-446655440111",
+  "status": "queued",
+  "message": "Experiment queued"
+}
+```
+
+### Experiment Retrieval
+`GET /api/experiments/{experiment_id}`
+
+### Experimental Limitations & Scientific Integrity
+- **Sample Size & Significance**: Evaluations with fewer than 30 runs do not establish formal statistical significance and are explicitly labeled as directional only.
+- **Token Usage**: When token counting is unavailable in the local execution runtime, token usage is explicitly represented as `status: "unavailable"` and `total_tokens: null` rather than fabricating numbers.
+- **Simulation**: In mock mode (`MOCK_MODE=true`), results are explicitly labeled as `is_simulated: true`.
 
 ---
 
-## 9. Architecture Overview
+## 10. AI Agent Services & Semantic Provider Specifications
+
+HandoffIQ provides clean abstract contracts and dependency injection points for the AI developer:
+- **Agent Services Specification** (Researcher, Coder, Reviewer, Tester):
+  - [backend/docs/AGENT_SERVICES_SPEC.md](docs/AGENT_SERVICES_SPEC.md)
+- **Semantic Validation Provider Specification** (AI Drift Detection):
+  - [backend/docs/SEMANTIC_PROVIDER_SPEC.md](docs/SEMANTIC_PROVIDER_SPEC.md)
+
+---
+
+## 10. Architecture Overview
 
 ```
 backend/

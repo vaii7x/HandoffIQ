@@ -5,9 +5,12 @@ from typing import List, Optional
 from uuid import UUID
 
 from app.models.agent_run import AgentRun
+from app.models.artifact import CodeArtifact
 from app.models.event import WorkflowEvent
+from app.models.recovery import RecoveryAttempt
 from app.models.requirement import Requirement
 from app.models.task import Task
+from app.models.test_result import TestResult
 
 
 class TaskRepository(ABC):
@@ -71,4 +74,49 @@ class TaskRepository(ABC):
     @abstractmethod
     async def get_agent_runs(self, task_id: UUID) -> List[AgentRun]:
         """Retrieve agent runs associated with a task."""
+        pass
+
+    @abstractmethod
+    async def add_agent_run(self, run: AgentRun) -> AgentRun:
+        """Record an agent execution phase."""
+        pass
+
+    @abstractmethod
+    async def update_agent_run(self, run: AgentRun) -> AgentRun:
+        """Update an agent execution phase (e.g. status, completed_at, summary, error)."""
+        pass
+
+    @abstractmethod
+    async def add_artifact(self, task_id: UUID, artifact: CodeArtifact) -> CodeArtifact:
+        """Store a generated or patched code artifact."""
+        pass
+
+    @abstractmethod
+    async def get_artifacts(self, task_id: UUID) -> List[CodeArtifact]:
+        """Retrieve all code artifacts generated for a task."""
+        pass
+
+    @abstractmethod
+    async def add_test_result(self, task_id: UUID, test_result: TestResult) -> TestResult:
+        """Record the outcome of a test execution."""
+        pass
+
+    @abstractmethod
+    async def get_test_results(self, task_id: UUID) -> List[TestResult]:
+        """Retrieve all test execution outcomes recorded for a task."""
+        pass
+
+    @abstractmethod
+    async def add_recovery_attempt(self, task_id: UUID, recovery: RecoveryAttempt) -> RecoveryAttempt:
+        """Record a recovery/repair attempt."""
+        pass
+
+    @abstractmethod
+    async def get_recovery_attempts(self, task_id: UUID) -> List[RecoveryAttempt]:
+        """Retrieve all recovery attempts for a task."""
+        pass
+
+    @abstractmethod
+    async def update_recovery_attempt(self, recovery: RecoveryAttempt) -> RecoveryAttempt:
+        """Update a recovery attempt status, repair summary, or regressions."""
         pass

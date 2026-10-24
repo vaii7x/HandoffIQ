@@ -48,6 +48,45 @@ class TaskNotFoundError(AppError):
         )
 
 
+class ExperimentNotFoundError(AppError):
+    """Raised when a requested experiment does not exist."""
+
+    def __init__(self, experiment_id: Any) -> None:
+        super().__init__(
+            message=f"Experiment '{experiment_id}' was not found.",
+            code="EXPERIMENT_NOT_FOUND",
+            status_code=status.HTTP_404_NOT_FOUND,
+            details={"experiment_id": str(experiment_id)},
+        )
+
+
+class InvalidMutationTypeError(AppError):
+    """Raised when an unsupported or invalid mutation type is requested."""
+
+    def __init__(self, invalid_types: Any, supported_types: Optional[Any] = None) -> None:
+        details = {"invalid_types": invalid_types}
+        if supported_types:
+            details["supported_types"] = supported_types
+        super().__init__(
+            message=f"Invalid mutation type(s): {invalid_types}.",
+            code="INVALID_MUTATION_TYPE",
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            details=details,
+        )
+
+
+class TaskAlreadyRunningError(AppError):
+    """Raised when an execution run is requested for a task that is already running."""
+
+    def __init__(self, task_id: Any) -> None:
+        super().__init__(
+            message=f"Task {task_id} is already executing.",
+            code="TASK_ALREADY_RUNNING",
+            status_code=status.HTTP_409_CONFLICT,
+            details={"task_id": str(task_id)},
+        )
+
+
 class ValidationError(AppError):
     """Raised for domain validation failures."""
 
@@ -68,6 +107,84 @@ class ConfigurationError(AppError):
             message=message,
             code="CONFIGURATION_ERROR",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+class DatabaseError(AppError):
+    """Raised when database operations encounter connection errors, timeouts, or constraint violations."""
+
+    def __init__(
+        self,
+        message: str = "Database operation failed.",
+        code: str = "DATABASE_ERROR",
+        status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,
+        details: Optional[Any] = None,
+    ) -> None:
+        super().__init__(
+            message=message,
+            code=code,
+            status_code=status_code,
+            details=details,
+        )
+
+
+class WorkspaceNotFoundError(AppError):
+    """Raised when a specified workspace directory does not exist or is not a directory."""
+
+    def __init__(self, workspace_path: str) -> None:
+        super().__init__(
+            message=f"Workspace path '{workspace_path}' does not exist or is not a directory.",
+            code="WORKSPACE_NOT_FOUND",
+            status_code=status.HTTP_404_NOT_FOUND,
+            details={"workspace_path": workspace_path},
+        )
+
+
+class PathTraversalError(AppError):
+    """Raised when an accessed path attempts directory traversal outside the workspace."""
+
+    def __init__(self, path: str, workspace_root: str) -> None:
+        super().__init__(
+            message=f"Path '{path}' resolves outside the allowed workspace '{workspace_root}'.",
+            code="PATH_TRAVERSAL_DETECTED",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            details={"path": path, "workspace_root": workspace_root},
+        )
+
+
+class WorkspaceSecurityError(AppError):
+    """Raised when a file or directory access violates security policies (e.g. secrets, escaping symlinks)."""
+
+    def __init__(self, message: str, details: Optional[Any] = None) -> None:
+        super().__init__(
+            message=message,
+            code="WORKSPACE_SECURITY_VIOLATION",
+            status_code=status.HTTP_403_FORBIDDEN,
+            details=details,
+        )
+
+
+class OversizedFileError(AppError):
+    """Raised when a file exceeds the maximum permitted indexing size."""
+
+    def __init__(self, file_path: str, size_bytes: int, max_bytes: int) -> None:
+        super().__init__(
+            message=f"File '{file_path}' ({size_bytes} bytes) exceeds maximum index size limit of {max_bytes} bytes.",
+            code="OVERSIZED_FILE",
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            details={"file_path": file_path, "size_bytes": size_bytes, "max_bytes": max_bytes},
+        )
+
+
+class ContextMapError(AppError):
+    """Raised when context map indexing or retrieval fails."""
+
+    def __init__(self, message: str, details: Optional[Any] = None) -> None:
+        super().__init__(
+            message=message,
+            code="CONTEXT_MAP_ERROR",
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            details=details,
         )
 
 
