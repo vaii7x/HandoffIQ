@@ -53,3 +53,11 @@ class RecoveryAttempt(HandoffIQBaseModel):
         default_factory=list,
         description="Test result IDs associated with this recovery phase"
     )
+    regressions: List[str] = Field(
+        default_factory=list,
+        description="Test names that previously passed but failed in this attempt"
+    )
+    unresolved_failures: List[str] = Field(
+        default_factory=list,
+        description="Test names that remain failed at the end of this attempt"
+    )

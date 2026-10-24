@@ -45,6 +45,10 @@ class TestResult(HandoffIQBaseModel):
         min_length=1,
         description="Testing framework or runner utilized (e.g. pytest, jest)"
     )
+    test_type: str = Field(
+        default="unit_test",
+        description="Classification: compilation, linting, unit_test, integration_test, browser_test"
+    )
     status: TestStatus = Field(
         ...,
         description="Result status of the test execution"

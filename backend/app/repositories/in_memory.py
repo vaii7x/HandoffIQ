@@ -7,9 +7,12 @@ from uuid import UUID
 
 from app.core.errors import EntityNotFoundError, TaskNotFoundError
 from app.models.agent_run import AgentRun
+from app.models.artifact import CodeArtifact
 from app.models.event import WorkflowEvent
+from app.models.recovery import RecoveryAttempt
 from app.models.requirement import Requirement
 from app.models.task import Task
+from app.models.test_result import TestResult
 from app.repositories.base import TaskRepository
 
 
@@ -21,6 +24,9 @@ class InMemoryTaskRepository(TaskRepository):
         self._requirements: Dict[UUID, Dict[str, Requirement]] = {}
         self._events: Dict[UUID, List[WorkflowEvent]] = {}
         self._agent_runs: Dict[UUID, List[AgentRun]] = {}
+        self._artifacts: Dict[UUID, List[CodeArtifact]] = {}
+        self._test_results: Dict[UUID, List[TestResult]] = {}
+        self._recoveries: Dict[UUID, List[RecoveryAttempt]] = {}
         self._req_counters: Dict[UUID, int] = {}
         self._lock = asyncio.Lock()
 
@@ -158,6 +164,69 @@ class InMemoryTaskRepository(TaskRepository):
             # If not found, append
             stored = run.model_copy()
             runs.append(stored)
+            return stored.model_copy()
+
+    async def add_artifact(self, task_id: UUID, artifact: CodeArtifact) -> CodeArtifact:
+        async with self._lock:
+            if task_id not in self._tasks:
+                raise TaskNotFoundError()
+            if task_id not in self._artifacts:
+                self._artifacts[task_id] = []
+            stored = artifact.model_copy(update={"task_id": task_id})
+            self._artifacts[task_id].append(stored)
+            return stored.model_copy()
+
+    async def get_artifacts(self, task_id: UUID) -> List[CodeArtifact]:
+        async with self._lock:
+            if task_id not in self._tasks:
+                raise TaskNotFoundError()
+            return [a.model_copy() for a in self._artifacts.get(task_id, [])]
+
+    async def add_test_result(self, task_id: UUID, test_result: TestResult) -> TestResult:
+        async with self._lock:
+            if task_id not in self._tasks:
+                raise TaskNotFoundError()
+            if task_id not in self._test_results:
+                self._test_results[task_id] = []
+            stored = test_result.model_copy(update={"task_id": task_id})
+            self._test_results[task_id].append(stored)
+            return stored.model_copy()
+
+    async def get_test_results(self, task_id: UUID) -> List[TestResult]:
+        async with self._lock:
+            if task_id not in self._tasks:
+                raise TaskNotFoundError()
+            return [t.model_copy() for t in self._test_results.get(task_id, [])]
+
+    async def add_recovery_attempt(self, task_id: UUID, recovery: RecoveryAttempt) -> RecoveryAttempt:
+        async with self._lock:
+            if task_id not in self._tasks:
+                raise TaskNotFoundError()
+            if task_id not in self._recoveries:
+                self._recoveries[task_id] = []
+            stored = recovery.model_copy(update={"task_id": task_id})
+            self._recoveries[task_id].append(stored)
+            return stored.model_copy()
+
+    async def get_recovery_attempts(self, task_id: UUID) -> List[RecoveryAttempt]:
+        async with self._lock:
+            if task_id not in self._tasks:
+                raise TaskNotFoundError()
+            return [r.model_copy() for r in self._recoveries.get(task_id, [])]
+
+    async def update_recovery_attempt(self, recovery: RecoveryAttempt) -> RecoveryAttempt:
+        async with self._lock:
+            if recovery.task_id not in self._tasks:
+                raise TaskNotFoundError()
+            attempts = self._recoveries.get(recovery.task_id, [])
+            for i, att in enumerate(attempts):
+                if att.id == recovery.id:
+                    stored = recovery.model_copy()
+                    attempts[i] = stored
+                    return stored.model_copy()
+            # If not found, append
+            stored = recovery.model_copy()
+            attempts.append(stored)
             return stored.model_copy()
 
 

@@ -52,6 +52,23 @@ class Settings(BaseSettings):
         description="Maximum permitted file size in bytes for indexing (default 512KB)"
     )
 
+    # Test execution & recovery configuration
+    MAX_RECOVERY_ATTEMPTS: int = Field(
+        default=2,
+        ge=1,
+        le=10,
+        description="Maximum automated recovery attempts for failing test runs"
+    )
+    TEST_EXECUTION_TIMEOUT_SECONDS: int = Field(
+        default=30,
+        ge=1,
+        description="Maximum execution timeout in seconds for test runners"
+    )
+    TEST_EXECUTION_ENABLED: bool = Field(
+        default=True,
+        description="Flag enabling test execution sandbox (if false, untrusted runs report disabled)"
+    )
+
     @property
     def is_production(self) -> bool:
         """Check if environment is production."""
