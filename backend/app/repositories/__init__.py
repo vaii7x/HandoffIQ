@@ -5,6 +5,8 @@ from app.repositories.handoff_repository import (
     InMemoryHandoffRepository,
     get_handoff_repository,
 )
+from app.repositories.supabase_task_repo import SupabaseTaskRepository
+from app.repositories.supabase_handoff_repo import SupabaseHandoffRepository
 
 __all__ = [
     "TaskRepository",
@@ -13,4 +15,6 @@ __all__ = [
     "HandoffRepository",
     "InMemoryHandoffRepository",
     "get_handoff_repository",
+    "SupabaseTaskRepository",
+    "SupabaseHandoffRepository",
 ]

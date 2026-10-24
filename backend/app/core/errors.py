@@ -71,6 +71,24 @@ class ConfigurationError(AppError):
         )
 
 
+class DatabaseError(AppError):
+    """Raised when database operations encounter connection errors, timeouts, or constraint violations."""
+
+    def __init__(
+        self,
+        message: str = "Database operation failed.",
+        code: str = "DATABASE_ERROR",
+        status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,
+        details: Optional[Any] = None,
+    ) -> None:
+        super().__init__(
+            message=message,
+            code=code,
+            status_code=status_code,
+            details=details,
+        )
+
+
 def register_exception_handlers(app: FastAPI) -> None:
     """Register uniform JSON error handlers for the application."""
 

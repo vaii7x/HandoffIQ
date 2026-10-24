@@ -4,6 +4,7 @@ from app.core.config import Settings, get_settings
 from app.core.errors import (
     AppError,
     ConfigurationError,
+    DatabaseError,
     EntityNotFoundError,
     TaskNotFoundError,
     ValidationError,
@@ -14,6 +15,7 @@ __all__ = [
     "get_settings",
     "AppError",
     "ConfigurationError",
+    "DatabaseError",
     "EntityNotFoundError",
     "TaskNotFoundError",
     "ValidationError",

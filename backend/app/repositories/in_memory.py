@@ -141,5 +141,13 @@ _in_memory_repository = InMemoryTaskRepository()
 
 
 def get_task_repository() -> TaskRepository:
-    """FastAPI dependency provider returning the active task repository."""
-    return _in_memory_repository
+    """FastAPI dependency provider returning the configured task repository."""
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    if settings.MOCK_MODE:
+        return _in_memory_repository
+
+    from app.repositories.supabase_task_repo import SupabaseTaskRepository
+
+    return SupabaseTaskRepository()

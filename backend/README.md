@@ -84,7 +84,30 @@ cp .env.example .env
 
 ---
 
-## 5. Startup Commands
+## 5. Database Migrations & Persistence Modes
+
+HandoffIQ supports two persistence modes controlled by the `MOCK_MODE` environment variable:
+
+1. **Local Development (`MOCK_MODE=true`)**: Runs entirely in-memory with zero external dependencies. No Supabase credentials or database needed.
+2. **Persistent Storage (`MOCK_MODE=false`)**: Stores all tasks, canonical requirements, handoffs, and workflow events in PostgreSQL on Supabase.
+   - If `MOCK_MODE=false` and `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` are missing or placeholder values, the application **fails immediately with `ConfigurationError`** to prevent silent data loss.
+
+### Running SQL Migrations
+Apply the initial PostgreSQL schema and Row Level Security (RLS) policies:
+```bash
+# Apply via Supabase CLI
+supabase db push
+
+# Or execute SQL migration script directly in Supabase SQL Editor
+# File: backend/migrations/001_initial_schema.sql
+```
+
+For full database architecture and RLS policy documentation, see:
+- [backend/docs/DATABASE_AND_RLS.md](docs/DATABASE_AND_RLS.md)
+
+---
+
+## 6. Startup Commands
 
 Start the FastAPI application with Uvicorn:
 
@@ -99,7 +122,7 @@ By default, the server will be accessible at:
 
 ---
 
-## 6. Testing
+## 7. Testing
 
 Run the automated test suite using `pytest`:
 
@@ -116,7 +139,7 @@ pytest backend/tests -v
 
 ---
 
-## 7. Endpoints & API Documentation
+## 8. Endpoints & API Documentation
 
 | Endpoint | Method | Status | Description |
 | :--- | :--- | :--- | :--- |
@@ -227,14 +250,14 @@ pytest backend/tests -v
 
 ---
 
-## 8. AI Semantic Validation Provider
+## 9. AI Semantic Validation Provider
 
 For AI-powered semantic drift and constraint weakening analysis, refer to the interface specification in:
 - [backend/docs/SEMANTIC_PROVIDER_SPEC.md](docs/SEMANTIC_PROVIDER_SPEC.md)
 
 ---
 
-## 9. Architecture Overview
+## 10. Architecture Overview
 
 ```
 backend/

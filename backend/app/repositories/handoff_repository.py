@@ -79,5 +79,13 @@ _in_memory_handoff_repository = InMemoryHandoffRepository()
 
 
 def get_handoff_repository() -> HandoffRepository:
-    """Dependency provider returning the active handoff repository."""
-    return _in_memory_handoff_repository
+    """Dependency provider returning the configured handoff repository."""
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    if settings.MOCK_MODE:
+        return _in_memory_handoff_repository
+
+    from app.repositories.supabase_handoff_repo import SupabaseHandoffRepository
+
+    return SupabaseHandoffRepository()
