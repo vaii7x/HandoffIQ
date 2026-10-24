@@ -127,6 +127,8 @@ pytest backend/tests -v
 | `/api/tasks/{task_id}` | `GET` | `200` / `404` | Get task details, requirements, runs, and summary |
 | `/api/tasks/{task_id}/requirements` | `GET` | `200` / `404` | Get canonical requirements for a task |
 | `/api/tasks/{task_id}/events` | `GET` | `200` / `404` | Get workflow audit log events for a task |
+| `/api/tasks/{task_id}/handoffs` | `POST` | `201` / `404` | Submit handoff for validation, auto-repair, and audit |
+| `/api/tasks/{task_id}/handoffs` | `GET` | `200` / `404` | List all handoffs recorded for a task |
 | `/openapi.json` | `GET` | `200` | Raw OpenAPI 3.1 specification schema |
 | `/docs` | `GET` | `200` | Interactive Swagger UI documentation |
 | `/redoc` | `GET` | `200` | ReDoc alternative API documentation |
@@ -179,9 +181,60 @@ pytest backend/tests -v
 }
 ```
 
+### Example Handoff Validation Request
+`POST /api/tasks/{task_id}/handoffs`
+```json
+{
+  "source_agent": "researcher",
+  "target_agent": "coder",
+  "requirement_ids": ["R001"],
+  "payload": {
+    "architecture_spec": "spec_v1.md",
+    "components": ["Login", "ExpenseList"]
+  },
+  "auto_repair": true
+}
+```
+
+### Example Handoff Validation Response (HTTP 201)
+```json
+{
+  "handoff": {
+    "id": "770e8400-e29b-41d4-a716-446655440000",
+    "task_id": "550e8400-e29b-41d4-a716-446655440000",
+    "source_agent": "researcher",
+    "target_agent": "coder",
+    "status": "repaired",
+    "requirement_ids": ["R001", "R002", "R003", "R004"],
+    "payload": {"architecture_spec": "spec_v1.md", "components": ["Login", "ExpenseList"]},
+    "issues": [
+      {
+        "id": "ISSUE-A1B2C3D4",
+        "requirement_id": "R002",
+        "issue_type": "omission",
+        "severity": "high",
+        "description": "Canonical requirement R002 is missing from the handoff requirement_ids.",
+        "repair_status": "repaired",
+        "evidence": ["Canonical requirement 'R002' not found in handoff ids"]
+      }
+    ],
+    "created_at": "2026-10-24T10:31:00.000000Z"
+  },
+  "repaired": true,
+  "issues_count": 3
+}
+```
+
 ---
 
-## 8. Architecture Overview
+## 8. AI Semantic Validation Provider
+
+For AI-powered semantic drift and constraint weakening analysis, refer to the interface specification in:
+- [backend/docs/SEMANTIC_PROVIDER_SPEC.md](docs/SEMANTIC_PROVIDER_SPEC.md)
+
+---
+
+## 9. Architecture Overview
 
 ```
 backend/
