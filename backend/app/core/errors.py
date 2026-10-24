@@ -48,6 +48,18 @@ class TaskNotFoundError(AppError):
         )
 
 
+class TaskAlreadyRunningError(AppError):
+    """Raised when an execution run is requested for a task that is already running."""
+
+    def __init__(self, task_id: Any) -> None:
+        super().__init__(
+            message=f"Task {task_id} is already executing.",
+            code="TASK_ALREADY_RUNNING",
+            status_code=status.HTTP_409_CONFLICT,
+            details={"task_id": str(task_id)},
+        )
+
+
 class ValidationError(AppError):
     """Raised for domain validation failures."""
 

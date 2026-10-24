@@ -135,6 +135,31 @@ class InMemoryTaskRepository(TaskRepository):
             runs = self._agent_runs.get(task_id, [])
             return [r.model_copy() for r in runs]
 
+    async def add_agent_run(self, run: AgentRun) -> AgentRun:
+        async with self._lock:
+            if run.task_id not in self._tasks:
+                raise TaskNotFoundError()
+            if run.task_id not in self._agent_runs:
+                self._agent_runs[run.task_id] = []
+            stored = run.model_copy()
+            self._agent_runs[run.task_id].append(stored)
+            return stored.model_copy()
+
+    async def update_agent_run(self, run: AgentRun) -> AgentRun:
+        async with self._lock:
+            if run.task_id not in self._tasks:
+                raise TaskNotFoundError()
+            runs = self._agent_runs.get(run.task_id, [])
+            for i, r in enumerate(runs):
+                if r.id == run.id:
+                    stored = run.model_copy()
+                    runs[i] = stored
+                    return stored.model_copy()
+            # If not found, append
+            stored = run.model_copy()
+            runs.append(stored)
+            return stored.model_copy()
+
 
 # Global repository instance for development / in-memory lifecycle
 _in_memory_repository = InMemoryTaskRepository()

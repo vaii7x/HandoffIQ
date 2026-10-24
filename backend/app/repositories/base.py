@@ -72,3 +72,13 @@ class TaskRepository(ABC):
     async def get_agent_runs(self, task_id: UUID) -> List[AgentRun]:
         """Retrieve agent runs associated with a task."""
         pass
+
+    @abstractmethod
+    async def add_agent_run(self, run: AgentRun) -> AgentRun:
+        """Record an agent execution phase."""
+        pass
+
+    @abstractmethod
+    async def update_agent_run(self, run: AgentRun) -> AgentRun:
+        """Update an agent execution phase (e.g. status, completed_at, summary, error)."""
+        pass

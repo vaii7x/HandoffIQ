@@ -152,6 +152,7 @@ pytest backend/tests -v
 | `/api/tasks/{task_id}/events` | `GET` | `200` / `404` | Get workflow audit log events for a task |
 | `/api/tasks/{task_id}/handoffs` | `POST` | `201` / `404` | Submit handoff for validation, auto-repair, and audit |
 | `/api/tasks/{task_id}/handoffs` | `GET` | `200` / `404` | List all handoffs recorded for a task |
+| `/api/tasks/{task_id}/run` | `POST` | `200` / `404` / `409` | Start multi-agent workflow run in managed background job |
 | `/openapi.json` | `GET` | `200` | Raw OpenAPI 3.1 specification schema |
 | `/docs` | `GET` | `200` | Interactive Swagger UI documentation |
 | `/redoc` | `GET` | `200` | ReDoc alternative API documentation |
@@ -248,12 +249,28 @@ pytest backend/tests -v
 }
 ```
 
+### Example Workflow Execution Request
+`POST /api/tasks/{task_id}/run`
+
+### Example Workflow Execution Response (HTTP 200)
+```json
+{
+  "task_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "running",
+  "current_stage": "research",
+  "message": "Workflow started"
+}
+```
+
 ---
 
-## 9. AI Semantic Validation Provider
+## 9. AI Agent Services & Semantic Provider Specifications
 
-For AI-powered semantic drift and constraint weakening analysis, refer to the interface specification in:
-- [backend/docs/SEMANTIC_PROVIDER_SPEC.md](docs/SEMANTIC_PROVIDER_SPEC.md)
+HandoffIQ provides clean abstract contracts and dependency injection points for the AI developer:
+- **Agent Services Specification** (Researcher, Coder, Reviewer, Tester):
+  - [backend/docs/AGENT_SERVICES_SPEC.md](docs/AGENT_SERVICES_SPEC.md)
+- **Semantic Validation Provider Specification** (AI Drift Detection):
+  - [backend/docs/SEMANTIC_PROVIDER_SPEC.md](docs/SEMANTIC_PROVIDER_SPEC.md)
 
 ---
 

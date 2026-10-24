@@ -270,3 +270,39 @@ class SupabaseTaskRepository(TaskRepository):
             return [AgentRun(**row) for row in res.data]
         except Exception as exc:
             _handle_db_exception(exc, f"get_agent_runs({task_id})")
+
+    async def add_agent_run(self, run: AgentRun) -> AgentRun:
+        data = {
+            "id": str(run.id),
+            "task_id": str(run.task_id),
+            "agent_type": run.agent_type.value if hasattr(run.agent_type, "value") else str(run.agent_type),
+            "status": run.status.value if hasattr(run.status, "value") else str(run.status),
+            "started_at": run.started_at.isoformat() if run.started_at else None,
+            "completed_at": run.completed_at.isoformat() if run.completed_at else None,
+            "summary": run.summary,
+            "error": run.error,
+        }
+        try:
+            res = self.client.table("agent_runs").insert(data).execute()
+            if not res.data:
+                raise DatabaseError("Failed to insert agent run.")
+            return AgentRun(**res.data[0])
+        except Exception as exc:
+            _handle_db_exception(exc, f"add_agent_run({run.task_id})")
+
+    async def update_agent_run(self, run: AgentRun) -> AgentRun:
+        data = {
+            "status": run.status.value if hasattr(run.status, "value") else str(run.status),
+            "started_at": run.started_at.isoformat() if run.started_at else None,
+            "completed_at": run.completed_at.isoformat() if run.completed_at else None,
+            "summary": run.summary,
+            "error": run.error,
+        }
+        try:
+            res = self.client.table("agent_runs").update(data).eq("id", str(run.id)).execute()
+            if not res.data:
+                # If row doesn't exist, insert it
+                return await self.add_agent_run(run)
+            return AgentRun(**res.data[0])
+        except Exception as exc:
+            _handle_db_exception(exc, f"update_agent_run({run.id})")

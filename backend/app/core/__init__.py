@@ -6,6 +6,7 @@ from app.core.errors import (
     ConfigurationError,
     DatabaseError,
     EntityNotFoundError,
+    TaskAlreadyRunningError,
     TaskNotFoundError,
     ValidationError,
 )
@@ -17,6 +18,7 @@ __all__ = [
     "ConfigurationError",
     "DatabaseError",
     "EntityNotFoundError",
+    "TaskAlreadyRunningError",
     "TaskNotFoundError",
     "ValidationError",
 ]
