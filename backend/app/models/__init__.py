@@ -17,6 +17,16 @@ from app.models.test_result import TestResult, TestStatus
 from app.models.recovery import RecoveryAttempt, RecoveryStatus
 from app.models.event import WorkflowEvent
 from app.models.experiment import Experiment, ExperimentStatus
+from app.models.context_map import (
+    ContextFileMatch,
+    ContextPackage,
+    FileRelationship,
+    IndexedFile,
+    ParsedSymbol,
+    ProjectIndex,
+    SymbolType,
+    TokenAccounting,
+)
 
 __all__ = [
     "HandoffIQBaseModel",
@@ -44,4 +54,12 @@ __all__ = [
     "WorkflowEvent",
     "Experiment",
     "ExperimentStatus",
+    "SymbolType",
+    "ParsedSymbol",
+    "FileRelationship",
+    "IndexedFile",
+    "ProjectIndex",
+    "TokenAccounting",
+    "ContextFileMatch",
+    "ContextPackage",
 ]

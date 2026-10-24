@@ -46,6 +46,12 @@ class Settings(BaseSettings):
         description="Run in mock mode without external API dependencies"
     )
 
+    # Workspace & ContextMap configuration
+    DEFAULT_MAX_FILE_SIZE_BYTES: int = Field(
+        default=512 * 1024,
+        description="Maximum permitted file size in bytes for indexing (default 512KB)"
+    )
+
     @property
     def is_production(self) -> bool:
         """Check if environment is production."""

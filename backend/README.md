@@ -153,6 +153,10 @@ pytest backend/tests -v
 | `/api/tasks/{task_id}/handoffs` | `POST` | `201` / `404` | Submit handoff for validation, auto-repair, and audit |
 | `/api/tasks/{task_id}/handoffs` | `GET` | `200` / `404` | List all handoffs recorded for a task |
 | `/api/tasks/{task_id}/run` | `POST` | `200` / `404` / `409` | Start multi-agent workflow run in managed background job |
+| `/api/context-map/index` | `POST` | `200` / `400` / `404` | Safely index local workspace (HTML, CSS, JS, TS, React) |
+| `/api/context-map/index` | `GET` | `200` / `404` | Retrieve cached workspace index summary |
+| `/api/context-map/file` | `GET` | `200` / `400` / `403` / `422` | Safely inspect source file with traversal & secret protections |
+| `/api/tasks/{task_id}/context-map` | `POST` | `200` / `404` | Retrieve ranked context package & token metrics for task |
 | `/openapi.json` | `GET` | `200` | Raw OpenAPI 3.1 specification schema |
 | `/docs` | `GET` | `200` | Interactive Swagger UI documentation |
 | `/redoc` | `GET` | `200` | ReDoc alternative API documentation |

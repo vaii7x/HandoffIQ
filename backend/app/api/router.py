@@ -1,7 +1,7 @@
 """Central API router assembling all sub-routes."""
 
 from fastapi import APIRouter
-from app.api.routes import handoffs, health, tasks, workflow
+from app.api.routes import context_map, handoffs, health, tasks, workflow
 
 api_router = APIRouter()
 
@@ -10,3 +10,4 @@ api_router.include_router(health.router)
 api_router.include_router(tasks.router)
 api_router.include_router(handoffs.router)
 api_router.include_router(workflow.router)
+api_router.include_router(context_map.router)
