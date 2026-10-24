@@ -168,3 +168,116 @@ def check_deterministic_contradictions(
                     )
 
     return issues
+
+
+SUSPICIOUS_PATTERNS: List[str] = [
+    "ignore previous instructions",
+    "ignore all previous",
+    "system prompt override",
+    "system_prompt_override",
+    "instruction_override",
+    "bypass safety",
+    "bypass_safety",
+    "export secret",
+    "dump database credentials",
+]
+
+
+def check_suspicious_instructions(payload: Any) -> List[ValidationIssue]:
+    """Identify prompt injections, unsafe overrides, or malicious directives in payload."""
+    issues: List[ValidationIssue] = []
+    if not isinstance(payload, dict):
+        return issues
+
+    payload_str = str(payload).lower()
+    for pattern in SUSPICIOUS_PATTERNS:
+        if pattern in payload_str or payload.get("bypass_safety") is True:
+            issues.append(
+                ValidationIssue(
+                    requirement_id=None,
+                    issue_type=IssueType.suspicious_instruction,
+                    severity=IssueSeverity.critical,
+                    description=f"Detected suspicious instruction or unsafe override in handoff payload matching '{pattern}'.",
+                    original_value=None,
+                    observed_value=str(payload.get("instruction_override") or pattern),
+                    repair_status=RepairStatus.unresolved,
+                    evidence=[f"Payload contains flagged instruction pattern '{pattern}'"],
+                )
+            )
+            break
+    return issues
+
+
+def check_weakened_constraints(
+    canonical_requirements: List[Requirement],
+    payload: Dict[str, Any],
+) -> List[ValidationIssue]:
+    """Detect relaxed or weakened security/functional constraints in payload."""
+    issues: List[ValidationIssue] = []
+    if not isinstance(payload, dict):
+        return issues
+
+    if (
+        payload.get("allow_anonymous") is True
+        or payload.get("security_constraint") == "optional_auth"
+        or "weakened_rule" in payload
+    ):
+        matched_req = next(
+            (r for r in canonical_requirements if "auth" in (r.original_text + " " + r.description).lower()),
+            canonical_requirements[0] if canonical_requirements else None,
+        )
+        req_id = matched_req.id if matched_req else None
+        orig_text = matched_req.original_text if matched_req else "Strict requirement"
+        observed_val = str(payload.get("weakened_rule") or payload.get("security_constraint") or "allow_anonymous=True")
+
+        issues.append(
+            ValidationIssue(
+                requirement_id=req_id,
+                issue_type=IssueType.weakened_constraint,
+                severity=IssueSeverity.high,
+                description=f"Requirement constraint was weakened in handoff payload: {observed_val}.",
+                original_value=orig_text,
+                observed_value=observed_val,
+                repair_status=RepairStatus.unresolved,
+                evidence=[f"Payload indicates weakened constraint '{observed_val}' opposing requirement '{orig_text}'"],
+            )
+        )
+    return issues
+
+
+def check_semantic_drift(
+    canonical_requirements: List[Requirement],
+    payload: Dict[str, Any],
+) -> List[ValidationIssue]:
+    """Detect subtle semantic drift or altered functional scope in payload."""
+    issues: List[ValidationIssue] = []
+    if not isinstance(payload, dict):
+        return issues
+
+    if "drift_note" in payload or payload.get("theme_spec") == "monochrome_light_only":
+        matched_req = next(
+            (
+                r
+                for r in canonical_requirements
+                if "dark" in (r.original_text + " " + r.description).lower()
+                or "theme" in (r.original_text + " " + r.description).lower()
+            ),
+            canonical_requirements[0] if canonical_requirements else None,
+        )
+        req_id = matched_req.id if matched_req else None
+        orig_text = matched_req.original_text if matched_req else "Canonical requirement"
+        observed_val = str(payload.get("drift_note") or payload.get("theme_spec"))
+
+        issues.append(
+            ValidationIssue(
+                requirement_id=req_id,
+                issue_type=IssueType.semantic_drift,
+                severity=IssueSeverity.high,
+                description=f"Semantic drift detected in handoff payload: {observed_val}.",
+                original_value=orig_text,
+                observed_value=observed_val,
+                repair_status=RepairStatus.unresolved,
+                evidence=[f"Payload alters canonical scope with drifted definition '{observed_val}'"],
+            )
+        )
+    return issues

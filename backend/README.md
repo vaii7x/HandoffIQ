@@ -268,7 +268,51 @@ pytest backend/tests -v
 
 ---
 
-## 9. AI Agent Services & Semantic Provider Specifications
+## 9. Mutation Lab & Evaluation API
+
+The Mutation Lab benchmarks a baseline (unvalidated) multi-agent workflow against a HandoffIQ-validated pipeline under controlled synthetic mutations.
+
+### Supported Mutation Types
+1. `missing_requirement`: Canonical requirement omitted from downstream handoff.
+2. `weakened_constraint`: Security or functional constraints relaxed (e.g. auth made optional).
+3. `semantic_drift`: Intent or scope drifted subtly without direct contradiction.
+4. `contradiction`: Explicit opposition to canonical requirements (e.g. `auth_enabled: false`).
+5. `invented_requirement`: Non-canonical, unrecognized requirement IDs injected.
+6. `suspicious_instruction`: Prompt injection or unsafe directives to bypass safety and dump credentials.
+
+### Experiment Creation Request
+`POST /api/experiments`
+```json
+{
+  "task_id": "550e8400-e29b-41d4-a716-446655440000",
+  "mutation_types": [
+    "missing_requirement",
+    "weakened_constraint"
+  ],
+  "runs": 1
+}
+```
+
+### Experiment Creation Response (HTTP 201)
+```json
+{
+  "experiment_id": "880e8400-e29b-41d4-a716-446655440111",
+  "status": "queued",
+  "message": "Experiment queued"
+}
+```
+
+### Experiment Retrieval
+`GET /api/experiments/{experiment_id}`
+
+### Experimental Limitations & Scientific Integrity
+- **Sample Size & Significance**: Evaluations with fewer than 30 runs do not establish formal statistical significance and are explicitly labeled as directional only.
+- **Token Usage**: When token counting is unavailable in the local execution runtime, token usage is explicitly represented as `status: "unavailable"` and `total_tokens: null` rather than fabricating numbers.
+- **Simulation**: In mock mode (`MOCK_MODE=true`), results are explicitly labeled as `is_simulated: true`.
+
+---
+
+## 10. AI Agent Services & Semantic Provider Specifications
 
 HandoffIQ provides clean abstract contracts and dependency injection points for the AI developer:
 - **Agent Services Specification** (Researcher, Coder, Reviewer, Tester):

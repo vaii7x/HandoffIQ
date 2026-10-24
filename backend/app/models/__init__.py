@@ -16,7 +16,15 @@ from app.models.artifact import CodeArtifact
 from app.models.test_result import TestResult, TestStatus
 from app.models.recovery import RecoveryAttempt, RecoveryStatus
 from app.models.event import WorkflowEvent
-from app.models.experiment import Experiment, ExperimentStatus
+from app.models.experiment import (
+    EvaluationMetrics,
+    Experiment,
+    ExperimentStatus,
+    MutationRecord,
+    MutationType,
+    RepairOutcomes,
+    TokenUsageMetric,
+)
 from app.models.context_map import (
     ContextFileMatch,
     ContextPackage,
@@ -54,6 +62,11 @@ __all__ = [
     "WorkflowEvent",
     "Experiment",
     "ExperimentStatus",
+    "MutationType",
+    "MutationRecord",
+    "EvaluationMetrics",
+    "RepairOutcomes",
+    "TokenUsageMetric",
     "SymbolType",
     "ParsedSymbol",
     "FileRelationship",

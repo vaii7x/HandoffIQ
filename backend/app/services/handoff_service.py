@@ -25,7 +25,10 @@ from app.services.validation_rules import (
     check_deterministic_contradictions,
     check_missing_requirements,
     check_payload_structure,
+    check_semantic_drift,
+    check_suspicious_instructions,
     check_unknown_requirements,
+    check_weakened_constraints,
 )
 
 logger = logging.getLogger(__name__)
@@ -84,7 +87,16 @@ class HandoffValidationService:
             )
         )
 
-        # 5. Injected semantic provider check (AI semantic drift analysis)
+        # 5. Deterministic check: suspicious instructions / unsafe overrides
+        issues.extend(check_suspicious_instructions(handoff.payload))
+
+        # 6. Deterministic check: weakened constraints
+        issues.extend(check_weakened_constraints(canonical_requirements, handoff.payload))
+
+        # 7. Deterministic check: subtle semantic drift
+        issues.extend(check_semantic_drift(canonical_requirements, handoff.payload))
+
+        # 8. Injected semantic provider check (AI semantic drift analysis)
         try:
             semantic_issues = await self.semantic_provider.analyze(
                 task_id=task_id,

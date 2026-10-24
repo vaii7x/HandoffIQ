@@ -48,6 +48,33 @@ class TaskNotFoundError(AppError):
         )
 
 
+class ExperimentNotFoundError(AppError):
+    """Raised when a requested experiment does not exist."""
+
+    def __init__(self, experiment_id: Any) -> None:
+        super().__init__(
+            message=f"Experiment '{experiment_id}' was not found.",
+            code="EXPERIMENT_NOT_FOUND",
+            status_code=status.HTTP_404_NOT_FOUND,
+            details={"experiment_id": str(experiment_id)},
+        )
+
+
+class InvalidMutationTypeError(AppError):
+    """Raised when an unsupported or invalid mutation type is requested."""
+
+    def __init__(self, invalid_types: Any, supported_types: Optional[Any] = None) -> None:
+        details = {"invalid_types": invalid_types}
+        if supported_types:
+            details["supported_types"] = supported_types
+        super().__init__(
+            message=f"Invalid mutation type(s): {invalid_types}.",
+            code="INVALID_MUTATION_TYPE",
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            details=details,
+        )
+
+
 class TaskAlreadyRunningError(AppError):
     """Raised when an execution run is requested for a task that is already running."""
 
