@@ -1,0 +1,213 @@
+import { HandoffPageConfig } from '../types/handoff';
+import { AGENT_CONFIGS } from './agents';
+
+export const HANDOFF_CONFIGS: Record<'validate' | 'test', HandoffPageConfig> = {
+  validate: {
+    id: 'validate',
+    stageNumber: 2,
+    stageName: 'Validate',
+    fractionText: '2/5',
+    eyebrow: 'HANDOFF VALIDATION',
+    heading: 'Validating Handoff',
+    supportingText:
+      'Checking for missing requirements, semantic drift and potential risks between agents.',
+    defaultStatusText: 'Validating handoff for completeness...',
+    // Reuses the Research Agent's exact blue palette
+    palette: {
+      ...AGENT_CONFIGS.research.palette,
+    },
+    stats: [
+      { id: 'preserved', label: 'Requirements preserved', value: '10 / 12', highlight: true },
+      { id: 'missing', label: 'Missing requirements', value: '1' },
+      { id: 'removed', label: 'Removed items', value: '1' },
+      { id: 'added', label: 'Added items', value: '1' },
+      { id: 'altered', label: 'Altered constraints', value: '1' },
+    ],
+    checkRows: [
+      {
+        id: 'req_comparison',
+        title: 'Comparing original and received requirements',
+        supportingDetail: '12 requirements analyzed',
+        status: 'completed',
+        kind: 'requirement_comparison',
+      },
+      {
+        id: 'discrepancy_detection',
+        title: 'Detecting missing, removed or added items',
+        supportingDetail: '3 discrepancies flagged in requirements payload',
+        status: 'completed',
+        kind: 'discrepancy_list',
+      },
+      {
+        id: 'constraints_risks',
+        title: 'Validating constraints and risks',
+        supportingDetail: 'Checking for semantic drift and security issues',
+        status: 'completed',
+        kind: 'constraint_risks',
+      },
+    ],
+    decision: {
+      type: 'ready_for_coding',
+      label: 'Ready for coding',
+      description: 'Handoff integrity verified. Requirement gaps resolved with automated fallback specs.',
+      actionLabel: 'Continue to Coding',
+      nextScreenId: 'coding',
+    },
+    discrepancies: [
+      {
+        id: 'disc-1',
+        requirementId: 'REQ-AUTH-04',
+        type: 'missing',
+        originalText: 'OAuth2 refresh token rotation must enforce a maximum 7-day TTL across all active sessions.',
+        receivedText: 'Omitted from Coding Agent prompt handoff bundle.',
+        repairStatus: 'Repaired · Explicit TTL rotation requirement restored',
+        severity: 'high',
+      },
+      {
+        id: 'disc-2',
+        requirementId: 'REQ-CACHE-12',
+        type: 'removed',
+        originalText: 'Client-side memory cache should invalidate on user logout.',
+        receivedText: 'Replaced with unconditional browser storage purge.',
+        repairStatus: 'Repaired · Cache invalidation hook preserved',
+        severity: 'medium',
+      },
+      {
+        id: 'disc-3',
+        requirementId: 'REQ-PERF-08',
+        type: 'altered',
+        originalText: 'WebGL particle rendering should remain throttled to 60 FPS on high-refresh displays.',
+        receivedText: 'Frame-rate unbound with requestAnimationFrame.',
+        repairStatus: 'Repaired · 60 FPS delta-time throttle added',
+        severity: 'low',
+      },
+    ],
+  },
+  test: {
+    id: 'test',
+    stageNumber: 4,
+    stageName: 'Test',
+    fractionText: '4/5',
+    eyebrow: 'TESTING & SELF-HEALING',
+    heading: 'Running Tests',
+    supportingText:
+      'Executing tests, verifying requirements and automatically fixing issues.',
+    defaultStatusText: 'Running test suite and verifying requirement assertions...',
+    // Reuses the Coding Agent's exact warm gold/amber palette
+    palette: {
+      ...AGENT_CONFIGS.coding.palette,
+    },
+    stats: [
+      { id: 'passed', label: 'Tests passed', value: '8', highlight: true },
+      { id: 'failed', label: 'Tests failed', value: '3' },
+      { id: 'removed', label: 'Removed tests', value: '1' },
+      { id: 'added', label: 'Added tests', value: '0' },
+      { id: 'repairs', label: 'Repairs applied', value: '2', highlight: true },
+    ],
+    checkRows: [
+      {
+        id: 'suite_execution',
+        title: 'Executing test suite',
+        supportingDetail: '11 unit & integration tests executed across 4 test suites',
+        status: 'completed',
+        kind: 'test_suite',
+      },
+      {
+        id: 'failure_analysis',
+        title: 'Analyzing failures',
+        supportingDetail: '3 failures analyzed against requirement acceptance criteria',
+        status: 'completed',
+        kind: 'failure_analysis',
+      },
+      {
+        id: 'self_healing',
+        title: 'Applying fixes and rerunning',
+        supportingDetail: '2 of 3 issues healed automatically (Attempt 1/2)',
+        status: 'completed',
+        kind: 'self_healing_fixes',
+      },
+    ],
+    decision: {
+      type: 'ready_for_deploy',
+      label: 'Ready for final verification',
+      description: 'Critical path tests verified and self-healing patches validated against baseline assertions.',
+      actionLabel: 'Continue to Deploy',
+      nextScreenId: 'deploy',
+    },
+    testCases: [
+      {
+        id: 'test-1',
+        name: 'test_token_refresh_lifecycle',
+        tool: 'pytest / vitest',
+        status: 'passed',
+        duration: '142ms',
+        outputSnippet: 'PASS: TTL expiration verified at 604800s timestamp boundary.',
+      },
+      {
+        id: 'test-2',
+        name: 'test_webgl_context_loss_recovery',
+        tool: 'vitest / webgl-mock',
+        status: 'repaired',
+        duration: '310ms',
+        outputSnippet: 'HEALED: Caught webglcontextrestored event, successfully reallocated buffers.',
+      },
+      {
+        id: 'test-3',
+        name: 'test_sse_reconnection_backoff',
+        tool: 'vitest / mock-socket',
+        status: 'repaired',
+        duration: '228ms',
+        outputSnippet: 'HEALED: Exponential backoff jitter validated across 3 network drops.',
+      },
+      {
+        id: 'test-4',
+        name: 'test_large_payload_sanitization',
+        tool: 'vitest / zod',
+        status: 'passed',
+        duration: '88ms',
+        outputSnippet: 'PASS: Schema rejected untrusted property payload injection.',
+      },
+    ],
+    failures: [
+      {
+        id: 'fail-1',
+        summary: 'Unhandled WebGL context loss on mobile viewport resize',
+        linkedRequirementId: 'REQ-PERF-08',
+        affectedFiles: ['src/components/ParticleSphere/ParticleSphere.tsx'],
+        errorDetails: 'TypeError: Cannot read properties of null (reading "dispose") on context reset.',
+      },
+      {
+        id: 'fail-2',
+        summary: 'SSE reconnection loop lacked backoff jitter',
+        linkedRequirementId: 'REQ-API-03',
+        affectedFiles: ['src/services/api.ts'],
+        errorDetails: 'Connection storm detected: 15 reconnect attempts within 200ms.',
+      },
+      {
+        id: 'fail-3',
+        summary: 'Token renewal race on simultaneous requests',
+        linkedRequirementId: 'REQ-AUTH-04',
+        affectedFiles: ['src/services/api.ts'],
+        errorDetails: 'AssertionError: Replay lock failed during rapid token renewal; expected 409, got 200.',
+      },
+    ],
+    repairs: [
+      {
+        id: 'rep-1',
+        failureSummary: 'WebGL unmount cleanup race condition',
+        repairSummary: 'Added conditional guard checking renderer.domElement before parent container detach.',
+        attemptNumber: 1,
+        affectedFiles: ['src/components/ParticleSphere/ParticleSphere.tsx'],
+        rerunResult: 'passed',
+      },
+      {
+        id: 'rep-2',
+        failureSummary: 'SSE reconnect backoff',
+        repairSummary: 'Wrapped reconnect call with Math.min(1000 * 2 ** attempt, 8000) jitter algorithm.',
+        attemptNumber: 1,
+        affectedFiles: ['src/services/api.ts'],
+        rerunResult: 'passed',
+      },
+    ],
+  },
+};
