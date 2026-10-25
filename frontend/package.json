@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "tsc --noEmit",
+    "test": "node --experimental-strip-types tests/test_validation_scenarios.ts && node --experimental-strip-types tests/test_demo_mode.ts && node --experimental-strip-types tests/test_api_abort_resilience.ts",
     "preview": "vite preview"
   },
   "dependencies": {

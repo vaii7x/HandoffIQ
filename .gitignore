@@ -1,50 +1,67 @@
+# ==========================================
+# HandoffIQ - Repository .gitignore
+# ==========================================
+
 # Dependencies
 node_modules/
+frontend/node_modules/
 .pnp
 .pnp.js
 
 # Production build artifacts
 dist/
+frontend/dist/
 build/
+*.tsbuildinfo
 
-# Python
+# Python Virtual Environments & Packages
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .venv/
 venv/
-.pytest_cache/
+backend/.venv/
+env/
+ENV/
 
-# Environment variables & secrets - NEVER COMMIT
+# Python Test & Cache Artifacts
+.pytest_cache/
+backend/.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Generated Task Workspaces & Runtime Storage
+backend/workspaces/
+backend/backend/workspaces/
+workspaces/
+*.zip
+*.tar.gz
+
+# Environment Variables & Secrets (NEVER COMMIT)
 .env
 .env.*
 !.env.example
 *.local
 
-# Editor directories
+# IDE & Editor Specific Files
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
+.DS_Store
+Thumbs.db
 
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.env
-.env.*
-!.env.example
-.venv/
-venv/
-node_modules/
-__pycache__/
-.pytest_cache/
-dist/
-*.pyc
-*.zip
+pnpm-debug.log*
+
+# Backups & Local Agent Tools
 HandoffIQ/
 HandoffIQ_backup/
-
-backend/workspaces/
-
+.agents/
