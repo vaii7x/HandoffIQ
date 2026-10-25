@@ -1,0 +1,145 @@
+import type { HandoffPageConfig } from '../types/handoff';
+import { AGENT_CONFIGS } from './agents.ts';
+
+export const HANDOFF_CONFIGS: Record<'validate' | 'test', HandoffPageConfig> = {
+  validate: {
+    id: 'validate',
+    stageNumber: 2,
+    stageName: 'Validate',
+    fractionText: '2/5',
+    eyebrow: 'HANDOFF VALIDATION',
+    heading: 'Validating Handoff',
+    supportingText:
+      'Checking for missing requirements, semantic drift and potential risks between agents.',
+    defaultStatusText: 'Validating handoff for completeness...',
+    // Reuses the Research Agent's exact blue palette
+    palette: {
+      ...AGENT_CONFIGS.research.palette,
+    },
+    stats: [
+      { id: 'preserved', label: 'Requirements preserved', value: '10 / 12', highlight: true },
+      { id: 'missing', label: 'Missing requirements', value: '1' },
+      { id: 'removed', label: 'Removed items', value: '1' },
+      { id: 'added', label: 'Added items', value: '1' },
+      { id: 'altered', label: 'Altered constraints', value: '1' },
+    ],
+    checkRows: [
+      {
+        id: 'req_comparison',
+        title: 'Comparing original and received requirements',
+        supportingDetail: '12 analyzed · 3 discrepancies',
+        status: 'completed',
+        statusText: 'Repaired',
+        kind: 'discrepancy_list',
+      },
+      {
+        id: 'constraints_risks',
+        title: 'Validating constraints and risks',
+        supportingDetail: 'Checking for semantic drift and security issues',
+        status: 'completed',
+        statusText: 'Passed',
+        kind: 'constraint_risks',
+      },
+    ],
+    decision: {
+      type: 'ready_for_coding',
+      label: 'Ready for coding',
+      description: 'Handoff integrity verified. Requirement gaps resolved with automated fallback specs.',
+      actionLabel: 'Continue to Coding',
+      nextScreenId: 'coding',
+    },
+    discrepancies: [
+      {
+        id: 'disc-1',
+        requirementId: 'REQ-AUTH-04',
+        type: 'missing',
+        originalText: 'OAuth2 refresh token rotation must enforce a maximum 7-day TTL across all active sessions.',
+        receivedText: 'Omitted from Coding Agent prompt handoff bundle.',
+        repairStatus: 'Repaired · Explicit TTL rotation requirement restored',
+        severity: 'high',
+        evidence: 'Payload AST audit: Parameter `auth.token.ttl` missing in Coding Agent prompt handoff bundle.',
+        repairDetails: 'Restored canonical OAuth2 token specification and bound refresh rotation schema with 7-day limit.',
+        revalidationResult: '100% contract compliance verified',
+      },
+      {
+        id: 'disc-2',
+        requirementId: 'REQ-CACHE-12',
+        type: 'removed',
+        originalText: 'Client-side memory cache should invalidate on user logout.',
+        receivedText: 'Replaced with unconditional browser storage purge.',
+        repairStatus: 'Repaired · Cache invalidation hook preserved',
+        severity: 'medium',
+        evidence: 'Static diff: Memory cleanup routine replaced by indiscriminate window.localStorage.clear().',
+        repairDetails: 'Preserved scoped session cache eviction handler to avoid clearing offline user preferences.',
+        revalidationResult: 'Cache lifecycle assertions passed',
+      },
+      {
+        id: 'disc-3',
+        requirementId: 'REQ-PERF-08',
+        type: 'altered',
+        originalText: 'WebGL particle rendering should remain throttled to 60 FPS on high-refresh displays.',
+        receivedText: 'Frame-rate unbound with requestAnimationFrame.',
+        repairStatus: 'Repaired · 60 FPS delta-time throttle added',
+        severity: 'low',
+        evidence: 'Render loop audit: requestAnimationFrame callback lacked delta-time clock clamp.',
+        repairDetails: 'Added 16.6ms frame step gate to WebGL particle animation loop.',
+        revalidationResult: 'Frame cadence locked at 60 FPS',
+      },
+    ],
+  },
+  test: {
+    id: 'test',
+    stageNumber: 4,
+    stageName: 'Test',
+    fractionText: '4/5',
+    eyebrow: 'TESTING & SELF-HEALING',
+    heading: 'Running Tests',
+    supportingText:
+      'Executing tests, verifying requirements and automatically fixing issues.',
+    defaultStatusText: 'Running test suite and verifying requirement assertions...',
+    // Reuses the Coding Agent's exact warm gold/amber palette
+    palette: {
+      ...AGENT_CONFIGS.coding.palette,
+    },
+    stats: [
+      { id: 'passed', label: 'Tests passed', value: '0', highlight: true },
+      { id: 'failed', label: 'Tests failed', value: '0' },
+      { id: 'removed', label: 'Tests removed', value: '0' },
+      { id: 'added', label: 'Tests added', value: '0' },
+      { id: 'repairs', label: 'Repairs applied', value: '0', highlight: true },
+    ],
+    checkRows: [
+      {
+        id: 'suite_execution',
+        title: 'Executing test suite',
+        supportingDetail: 'Verification tests executed for task requirements',
+        status: 'completed',
+        kind: 'test_suite',
+      },
+      {
+        id: 'failure_analysis',
+        title: 'Analyzing failures',
+        supportingDetail: 'Failures analyzed against canonical requirement acceptance criteria',
+        status: 'completed',
+        kind: 'failure_analysis',
+      },
+      {
+        id: 'self_healing',
+        title: 'Applying fixes and rerunning',
+        supportingDetail: 'Self-healing repair decisions evaluated',
+        status: 'completed',
+        kind: 'self_healing_fixes',
+      },
+    ],
+    decision: {
+      type: 'ready_for_deploy',
+      label: 'Ready for final verification',
+      description: 'Requirements verified against baseline assertions.',
+      actionLabel: 'Continue to Deploy',
+      nextScreenId: 'deploy',
+    },
+    testCases: [],
+    failures: [],
+    repairs: [],
+  },
+};

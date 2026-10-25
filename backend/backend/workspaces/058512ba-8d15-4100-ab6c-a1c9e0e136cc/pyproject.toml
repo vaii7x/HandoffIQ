@@ -1,0 +1,23 @@
+{
+  "build-system": {
+    "requires": ["setuptools>=61.0.0"],
+    "build-backend": "setuptools.build_meta"
+  },
+  "project": {
+    "name": "production-calculator",
+    "version": "1.0.0",
+    "description": "A production-ready Python calculator library",
+    "readme": "README.md",
+    "authors": [
+      {
+        "name": "Elite Software Engineer"
+      }
+    ],
+    "classifiers": [
+      "Programming Language :: Python :: 3",
+      "License :: OSI Approved :: MIT License",
+      "Operating System :: OS Independent"
+    ],
+    "requires-python": ">=3.8"
+  }
+}

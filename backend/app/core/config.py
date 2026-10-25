@@ -1,0 +1,108 @@
+"""Application configuration using Pydantic Settings."""
+
+from functools import lru_cache
+from typing import Any
+from pydantic import AliasChoices, Field, SecretStr, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables and .env file."""
+
+    model_config = SettingsConfigDict(
+        env_file=(".env", "backend/.env"),
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore",
+    )
+
+    APP_NAME: str = Field(default="HandoffIQ", description="Application name")
+    APP_ENV: str = Field(default="development", description="Environment: development, test, staging, production")
+    API_PREFIX: str = Field(default="/api", description="Base prefix for application API routes")
+    FRONTEND_ORIGIN: str = Field(default="http://localhost:3000", description="Allowed CORS origin for frontend")
+
+    # Supabase configuration
+    SUPABASE_URL: str = Field(
+        default="http://localhost:54321",
+        description="Supabase project URL"
+    )
+    SUPABASE_ANON_KEY: str = Field(
+        default="placeholder-anon-key",
+        description="Supabase client anonymous key"
+    )
+    SUPABASE_SERVICE_ROLE_KEY: SecretStr = Field(
+        default=SecretStr("placeholder-service-role-key"),
+        validation_alias=AliasChoices("SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY", "SUPABASE_KEY", "SB_SECRET_KEY"),
+        description="Supabase backend service role key - NEVER EXPOSE TO CLIENT"
+    )
+
+    @field_validator("SUPABASE_URL", mode="before")
+    @classmethod
+    def normalize_supabase_url(cls, v: Any) -> str:
+        """Normalize Supabase dashboard URLs to direct API endpoint."""
+        if isinstance(v, str):
+            v = v.strip()
+            import re
+            m = re.match(r"^https?://(?:app\.)?supabase\.com/dashboard/project/([a-z0-9_-]+)/?$", v)
+            if m:
+                return f"https://{m.group(1)}.supabase.co"
+        return v
+
+    # Gemini AI configuration
+    GEMINI_API_KEY: SecretStr = Field(
+        default=SecretStr("placeholder-gemini-key"),
+        description="Gemini API Key - NEVER EXPOSE TO CLIENT"
+    )
+    GEMINI_MODEL: str = Field(
+        default="gemini-flash-lite-latest",
+        description="Google Gemini model identifier for AI extraction and semantic validation"
+    )
+
+    # Operational flags
+    MOCK_MODE: bool = Field(
+        default=True,
+        description="Run in mock mode without external API dependencies"
+    )
+
+    # Workspace & ContextMap configuration
+    DEFAULT_MAX_FILE_SIZE_BYTES: int = Field(
+        default=512 * 1024,
+        description="Maximum permitted file size in bytes for indexing (default 512KB)"
+    )
+
+    # Test execution & recovery configuration
+    MAX_RECOVERY_ATTEMPTS: int = Field(
+        default=2,
+        ge=1,
+        le=10,
+        description="Maximum automated recovery attempts for failing test runs"
+    )
+    TEST_EXECUTION_TIMEOUT_SECONDS: int = Field(
+        default=30,
+        ge=1,
+        description="Maximum execution timeout in seconds for test runners"
+    )
+    TEST_EXECUTION_ENABLED: bool = Field(
+        default=True,
+        description="Flag enabling test execution sandbox (if false, untrusted runs report disabled)"
+    )
+
+    @property
+    def is_production(self) -> bool:
+        """Check if environment is production."""
+        return self.APP_ENV.lower() == "production"
+
+    def public_safe_dict(self) -> dict:
+        """Return non-sensitive configuration values safe for diagnostics."""
+        return {
+            "app_name": self.APP_NAME,
+            "app_env": self.APP_ENV,
+            "api_prefix": self.API_PREFIX,
+            "mock_mode": self.MOCK_MODE,
+        }
+
+
+@lru_cache()
+def get_settings() -> Settings:
+    """Return cached application settings instance."""
+    return Settings()

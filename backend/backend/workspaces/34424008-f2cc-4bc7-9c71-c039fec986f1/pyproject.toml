@@ -1,0 +1,10 @@
+{
+  "project": {
+    "name": "threadsafe-lru-cache",
+    "version": "1.0.0",
+    "description": "A thread-safe LRU cache with TTL expiration, capacity constraints, and metrics.",
+    "readme": "README.md",
+    "requires-python": ">=3.8",
+    "dependencies": []
+  }
+}
